@@ -1,0 +1,154 @@
+<section>
+  <h2>Express - Middlewares</h2>
+  <p>Middlewares are simply functions executed between receiving a request and sending a response</p>
+</section>
+
+<section>
+    <q>
+        <h2>An Express application is essentially a series of middleware function calls</h2>
+        <p>Express documentation</p>
+    </q>
+</section>
+
+<section>
+    <h2>Types</h2>
+    <ul>
+        <li>Application-level</li>
+        <li><b>Router-level</b></li>
+        <li>Error-handling</li>
+        <li>Built-in</li>
+        <li>Third-party <span class="fragment">(Application or route, but not written by us)</span></li>
+    </ul>
+</section>
+
+<section>
+    <h2>Examples</h2>
+    <pre><code data-trim>
+        const app = express()
+        const cookieParser = require('cookie-parser');
+
+        // Application
+        app.use(function (req, res, next) {
+            console.log('Time:', Date.now());
+            next();
+        });
+
+        // Error-handling
+        app.use(function (err, req, res, next) {
+            console.error(err.stack);
+            res.status(500).send('Something broke!');
+        });
+
+        // Build in
+        express.static('/public');
+
+        // Third-party
+        app.use(cookieParser());
+    </code></pre>
+</section>
+
+<section>
+    <h2>Simple route middleware</h2>
+    <pre><code data-trim>
+        const router = express.Router();
+        const { Users } = require('./user.model.js');
+
+        async function insertUser(req, res) {
+            if (req.auth.userType !== 'admin') {
+                res.status(401).json( message: 'Invalid user level' });
+            }
+
+            if (!req.body.email) {
+                res.status(400).json({ message: 'Email is required' });
+            }
+
+            if (await Users.findByEmail(req.body.email)) {
+                res.status(400).json({ message: 'User exists' });
+            }
+
+            await Users.create(req.body);
+            res.json({ message:'User succesfully created' });
+        }
+
+        router.post('/user/:id', insertUser);
+    </code></pre>
+    <p class="fragment">Seems legit?</p>
+</section>
+
+<section>
+    <h2>Issues?</h2>
+    <ul>
+        <li class="fragment">Single responsibility principle violation</li>
+        <li class="fragment">Hard to test</li>
+        <li class="fragment">Not reusable</li>
+    </ul>
+</section>
+
+<section>
+        <h2>Step one</h2>
+        <p>Separate cases into middlewares</p>
+        <pre><code data-trim>
+            function validatePriviliges(req,res, next) {
+                if (req.auth.userType !== 'admin') {
+                    return res.status(401).json( message: 'Invalid user level' });
+                }
+                next();
+            }
+
+            function validateBody(req, res, next) {
+                if (!req.body.email) {
+                    return res.status(400).json({ message: 'Email is required' });
+                }
+                next();
+            }
+
+            async function checkDuplicate(req, res, next) {
+                if (await Users.findByEmail(req.body.email)) {
+                    return res.status(400).json({ message: 'User exists' });
+                }
+                next();
+            }
+
+            async function insertUser(req, res) {
+                await Users.create(req.body);
+                res.json({ message:'User succesfully created' });
+            }
+        </code></pre>
+</section>
+
+<section>
+        <h2>Step two</h2>
+        <p>Apply to route</p>
+        <pre><code data-trim>
+            const router = express.Router();
+            import { validatePriviliges, validateBody, checkDuplicate, insertUser } = require('./user.middlewares.js')
+
+            router.post('/user/:id'
+                validatePriviliges,
+                validateBody,
+                checkDuplicate,
+                insertUser
+            );
+        </code></pre>
+</section>
+
+<section>
+        <h2>Reuse</h2>
+        <pre><code data-trim>
+            const router = express.Router();
+            import { validatePriviliges, validateBody, checkDuplicate, insertUser } = require('./user.middlewares.js')
+
+            router.post('/user/:id'
+                validatePriviliges,
+                validateBody,
+                checkDuplicate,
+                insertUser
+            );
+
+            router.put('/user/:id'
+                validatePriviliges,
+                validateBody,
+                updateUser
+            );
+        </code></pre>
+</section>

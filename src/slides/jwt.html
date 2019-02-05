@@ -1,0 +1,128 @@
+<section>
+    <h2>JSON Web Token (JWT)</h2>
+    <p class="fragment">A compact, URL-safe means of representing claims to be transferred between two parties.</p>
+</section>
+
+<section>
+    <h2>When should you use JSON Web Tokens?</h2>
+    <ul class="list-vertical">
+        <li>Authorization</li>
+        <li>Information Exchange</li>
+    </ul>
+</section>
+
+<section>
+    <h2>What is the JSON Web Token structure?</h2>
+    <p>JSON Web Tokens consist of three parts separated by dots (.)</p>
+    <ul class="list-vertical">
+        <li>Header</li>
+        <li>Payload</li>
+        <li>Signature</li>
+    </ul>
+    <div class="fragment">
+        <p>Therefore, a JWT typically looks like the following:</p>
+        <pre><code data-trim>xxxxx.yyyyy.zzzzz</code></pre>
+    </div>
+</section>
+
+<section>
+    <h2>Header</h2>
+    <p>
+        The header typically consists of two parts: the type of the token, which is JWT, and the hashing algorithm
+        being used, such as HMAC SHA256 or RSA.
+    </p>
+    <pre><code data-trim>
+        {
+            "alg": "HS256",
+            "typ": "JWT"
+        }
+    </code></pre>
+</section>
+
+<section>
+    <h2>Payload</h2>
+    <p>
+        The second part of the token is the payload, which contains the claims. Claims are statements about an entity (typically, the user) and additional data. There are three types of claims: registered, public, and private claims.
+    </p>
+    <pre><code data-trim>
+        {
+            "sub": "1213789",
+            "name": "John Doe",
+            "admin": true,
+            "exp": "42h",
+          }
+    </code></pre>
+</section>
+
+<section>
+    <h2>Payload - claims</h2>
+    <ul class="list-vertical">
+        <li><b>exp</b> - Expiration Time</li>
+        <li><b>nbf</b> - Not Before</li>
+        <li><b>iat</b> - Issued At</li>
+        <li><b>sub</b> - Subject</li>
+        <li><b>iss</b> - Issuer</li>
+        <li>custom</li>
+    </ul>
+</section>
+
+<section>
+    <h2>Signature</h2>
+    <p>
+        To create the signature part you have to take the encoded header, the encoded payload, a secret, the algorithm specified in the header, and sign that.
+    </p>
+    <pre><code data-trim>
+        HMACSHA256(
+            base64UrlEncode(header) + "." +
+            base64UrlEncode(payload),
+            secret
+        )
+    </code></pre>
+</section>
+
+<section>
+    <h2>Putting all together</h2>
+    <p>
+        The output is three Base64-URL strings separated by dots.
+    </p>
+    <pre><code data-trim>
+        eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+        eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.
+        SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+    </code></pre>
+</section>
+
+<section>
+    <h2>JavaScript implementation</h2>
+    <p>
+        The output is three Base64-URL strings separated by dots.
+    </p>
+    <pre><code data-trim>
+        jwt.sign(payload, secretOrPrivateKey, [options, callback])
+
+        jwt.verify(token, secretOrPublicKey, [options, callback])
+
+        jwt.decode(token [, options])
+    </code></pre>
+
+    <a href="https://www.npmjs.com/package/jsonwebtoken">https://www.npmjs.com/package/jsonwebtoken</a>
+</section>
+
+<section>
+    <h2>Usage examples</h2>
+    <p><img src="./images/jwt-postman.png" alt="logo" class="img400"></p>
+    <pre><code>
+        http://allfe:1234/uzytkownik/zresetuj-haslo/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+        eyJpZCI6IjViNjJiNmFhNmJmOTlhMGsdjQ0ODgyOSIsInB1cnBvc2UiOiJwYXfgfJlc2V0IiwiaWF0IjoxNTMzW
+        dfgwNTYwLCJleHAiOjE1MzMzNjY5NjB9.lA_DZde5vcYsZsBRIutrdhxfOAK2VTtE3r-psEhCrsHYx0
+    </code></pre>
+</section>
+
+<section>
+    <h2>Helpful links</h2>
+    <ul class="list-vertical">
+        <li><a href="https://jwt.io/">JWT Homepage</a></li>
+        <li><a href="https://www.npmjs.com/package/jsonwebtoken">JavaScript jsonwebtoken implementation</a></li>
+        <li><a href="https://tools.ietf.org/html/rfc7519">RFC 7519 - JWT Standard</a></li>
+    </ul>
+</section>

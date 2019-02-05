@@ -1,0 +1,145 @@
+<section>
+    <h2>MongoDB</h2>
+    <p>Relations - how deal with them</p>
+</section>
+
+<section>
+    <h2>Mongoose - populate</h2>
+
+    <p>Object schema</p>
+    <pre><code>
+            const mongoose = require('mongoose');
+            const Schema = mongoose.Schema;
+
+            const locationSchema = Schema({
+                name: String,
+                createdBy: { type: Schema.Types.ObjectId, ref: 'users' },
+            });
+
+            const Location = mongoose.model('Location', locationSchema);
+
+            modules.export = { Location };
+        </code></pre>
+
+
+    <div class="fragment">
+        <p>Query</p>
+        <pre><code>
+            const { Location } = require('./locations.model');
+
+            const location = Location.findById('507f191e810c19729de860ea')
+                .populate('createdBy', ['lastName']);
+        </code></pre>
+    </div>
+</section>
+
+<section>
+    <h2>Populate - behind the scenes</h2>
+    <p>Object in collection</p>
+    <pre><code>
+            {
+                "_id" : ObjectId("507f191e810c19729de860ea"),
+                "name" : "Neverwhere",
+                "createdBy" : ObjectId("5a97eee4f25b4d0a50eb99f4")
+            }
+    </code></pre>
+    <div class="fragment">
+        <p>Returned object</p>
+        <pre><code>
+                {
+                    "_id" : ObjectId("507f191e810c19729de860ea"),
+                    "name" : "Neverwhere",
+                    "createdBy" : {
+                        "_id": ObjectId("5a97eee4f25b4d0a50eb99f4"),
+                        "lastName": "Sandman",
+                    }
+                }
+        </code></pre>
+    </div>
+</section>
+
+<section>
+    <h2>Populate - pros / cons</h2>
+    <div class="fragment">
+        <p>Pros</p>
+        <ul>
+            <li>Easy to use</li>
+            <li>Could be used to populate single objects or arrays</li>
+        </ul>
+    </div>
+    <div class="fragment" style="margin-top: 2em;">
+        <p>Cons</p>
+        <ul>
+            <li>Each populate send separate request to database</li>
+        </ul>
+    </div>
+</section>
+
+<section>
+    <h2>Mongodb - aggregation</h2>
+
+    <p>Object schema</p>
+    <pre><code>
+        const mongoose = require('mongoose');
+        const Schema = mongoose.Schema;
+
+        const locationSchema = Schema({
+            name: String,
+            createdBy: { type: Schema.Types.ObjectId, ref: 'users' },
+        });
+
+        const Location = mongoose.model('Location', locationSchema);
+
+        modules.export = { Location };
+    </code></pre>
+</section>
+
+<section>
+    <h2>Mongodb - aggregation</h2>
+
+    <p>Query</p>
+    <pre><code>
+        const { Location } = require('./locations.model');
+
+        const location = Location.aggregate([
+            { $match: {
+                _id: ObjectId('507f191e810c19729de860ea')
+            } }
+            { $lookup: {
+                    from: 'users',
+                    localField: '$createdBy',
+                    foreignField: '$_id',
+                    as: 'createdBy',
+            } },
+            { $unwind: 'createdBy' },
+        ]);
+    </code></pre>
+</section>
+
+<section>
+    <h2>Aggregate - pros / cons</h2>
+    <div class="fragment">
+        <p>Pros</p>
+        <ul>
+            <li>Use single request to database</li>
+        </ul>
+    </div>
+    <div class="fragment" style="margin-top: 2em;">
+        <p>Cons</p>
+        <ul>
+            <li>Verbose queries*</li>
+            <li>Steep learning curve</li>
+        </ul>
+    </div>
+</section>
+
+<section>
+    <h2>What to choose?</h2>
+</section>
+
+<section>
+    <q>
+        <h2>It depends.</h2>
+        <p>Marek Śnieżek - about universal IT answer</p>
+    </q>
+</section>

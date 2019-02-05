@@ -1,0 +1,130 @@
+<section>
+    <h2>Joi</h2>
+    <p class="fragment">Object schema description language and validator for JavaScript objects.</p>
+</section>
+
+<section>
+    <h2>Why is it useful?</h2>
+    <ul class="list-vertical">
+        <li class="fragment">It validates payloads, params and queries before they hit handlers.
+        </li>
+        <li class="fragment">Allows to write reusable schemas.
+        </li>
+        <li class="fragment">Easy to use
+        </li>
+        <li class="fragment">Readable
+        </li>
+    </ul>
+</section>
+
+<section>
+    <h2>How to use?</h2>
+    <ul class="list-vertical">
+        <li class="fragment">Idea of Joi is to define the schema of what we expect an object to resemble.
+        </li>
+        <li class="fragment">We should use Joi features: Joi.string(), Joi.object()...
+        </li>
+        <li class="fragment">When we know our schema, we need to validate objects with it using validate() method from Joi.
+        </li>
+    </ul>
+</section>
+
+<section>
+    <h2>Basic usage</h2>
+</section>
+
+<section>
+    <h2>Schema</h2>
+    <pre><code data-trim>
+                    const Joi = require('joi');
+
+                    const rolesSchema = {
+                        userType: Joi.string().valid(
+                            'backend_developer',
+                            'frontend_developer'
+                            'tester',
+                            'project_manager'
+                        ).required(),
+                        name: Joi.string().alphanum().required(),
+                        salary: Joi.number().integer().min(500).max(15000),
+                    };
+                </code></pre>
+</section>
+
+<section>
+    <h2>Validate</h2>
+    <pre><code data-trim>
+                    const Joi = require('joi');
+
+                    const someValidationMethod = (req, res, next) => {
+                            const { js } = res.locals.languages;
+
+                            return Joi.validate({...req.body, js }, schema)
+                            .then(() => next())
+                            .catch(error => console.log(error));
+                        };
+                </code></pre>
+</section>
+
+<section>
+    <h2>Useful schema methods</h2>
+</section>
+
+<section>
+    <h2>Strings</h2>
+    <p>Joi.string()</p>
+    <ul class="list-vertical">
+        <li>
+            email() - requires the string to be valid email address.
+        </li>
+        <li>
+            length() - allows us to define length a string needs to be.
+        </li>
+        <li>
+            alphanum() - requires the string to only contain a-z, A-Z and 0-9.
+        </li>
+        <li>
+            regex() - defines a regular expression rule.
+        </li>
+    </ul>
+</section>
+
+<section>
+    <h2>Numbers</h2>
+    <p>Joi.number()</p>
+    <ul class="list-vertical">
+        <li>
+            integer() - requires the number to be integer.
+        </li>
+        <li>
+            greater(), less() - allows us to define maximum and minimum number range.
+        </li>
+        <li>
+            precision() - defines a certain number of decimal places to work with.
+        </li>
+        <li>
+            positive(), negative() - defines if number should be positive or negative.
+        </li>
+    </ul>
+</section>
+
+<section>
+    <h2>Others</h2>
+    <pre><code data-trim>
+                const schema = Joi.array().items(Joi.string(), Joi.number());
+
+                const schema = Joi.boolean().valid(true);
+
+                const schema = Joi.number().min(0).less(500).precision(3).strict().required();
+
+                const schema = {
+                    a: Joi.string().required(),
+                    b: Joi.string().valid(Joi.ref('a')),
+                };
+
+                const schema = {
+                    a: Joi.string().valid('firstValue', 'secondValue'),
+                    b: Joi.when('a', { is: 'firstValue', then: Joi.forbidden(), otherwise: Joi.string().required()),
+                };
+                </code></pre>
+</section>

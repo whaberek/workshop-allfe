@@ -1,1 +1,1 @@
-# workshop-allfe
+# pgs-allfe

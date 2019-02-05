@@ -1,0 +1,120 @@
+<section>
+    <h2>Redux Form</h2>
+    <p class="fragment">A Higher Order Component using react-redux to keep form state in Redux store.</p>
+</section>
+
+<section>
+    <h2>How to use?</h2>
+    <p class="fragment">To connect form components to Redux store, we'll need:</p>
+    <ul class="list-vertical">
+        <li class="fragment">
+            formReducer - tells how to update the Redux store based on changes from the
+            application. These changes are described by Redux actions.
+        </li>
+        <li class="fragment">
+            reduxForm() - function that takes configuration object and returns a new
+            function, used to wrap form.
+        </li>
+        <li class="fragment">
+            Field - component that lives inside wrapped form. Used to connect input
+            components to the redux-form.
+        </li>
+    </ul>
+</section>
+
+<section>
+    <h2>Basic usage</h2>
+</section>
+
+<section>
+    <h2>Form reducer</h2>
+    <pre><code data-trim>
+            import { createStore, combineReducers } from 'redux'
+            import { reducer as formReducer } from 'redux-form'
+
+            const rootReducer = combineReducers({
+                // ...your other reducers here
+                // you have to pass formReducer under 'form' key,
+                form: formReducer
+            })
+
+            const store = createStore(rootReducer)
+        </code></pre>
+</section>
+
+<section>
+    <h2>Form with Fields and Validation</h2>
+    <pre><code data-trim >
+            const validate = (values, props) => {
+                const errors = {};
+
+                if (!values.name) {
+                    errors.name = 'Name is required.'
+                }
+
+                if (!values.email) {
+                    errors.email = 'Email is required.'
+                } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)) {
+                    errors.email = 'Invalid email address.'
+                }
+
+                return errors;
+            }
+
+            const renderField = ({ input, label, type, meta: { touched, error } }) => (
+                <div>
+                    <label>{label}</label>
+                    <div>
+                        &lt;input {...input} placeholder={label} type={type} />
+                        {touched && error && <span>{error}</span>
+                    </div>
+                </div>
+            );
+
+            const BasicFormLayout = ({ handleSubmit, invalid }) => (
+                &lt;form onSubmit={handleSubmit}>
+                    &lt;Field name="name" type="text" component={renderField} label="Name"/>
+                    &lt;Field name="email" type="email" component={renderField} label="Email"/>
+                    <div>
+                        &lt;button type="submit" disabled={invalid}>
+                            Submit
+                        &lt;/button>
+                    </div>
+                &lt;/form>
+            );
+
+            const BasicForm = reduxForm({
+                form: 'basicForm',
+                validate,
+            })(BasicFormLayout);
+        </code></pre>
+</section>
+
+<section>
+    <h2>Reacting to submit</h2>
+    <pre><code data-trim>
+            import React, { Component }  from 'react'
+            import { ContactForm } from './ContactForm'
+
+            class ContactPage extends Component {
+                submit = values => {
+                    console.log(values)
+                }
+
+                render() {
+                    return &lt;ContactForm onSubmit={this.submit} />;
+                }
+            }
+        </code></pre>
+</section>
+
+<section>
+    <h2>What else?</h2>
+    <p class="fragment">There is also a lot of possibilities with Redux Form:</p>
+    <ul class="list-vertical">
+        <li class="fragment">Setting up the initial state values</li>
+        <li class="fragment">Implementing asynchronous validation</li>
+        <li class="fragment">Creating selectors to select whichever value you want</li>
+        <li class="fragment">A lot more...</li>
+    </ul>
+</section>

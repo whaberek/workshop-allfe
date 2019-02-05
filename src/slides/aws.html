@@ -1,0 +1,266 @@
+<section>
+    <h2>Amazon Web Services (AWS)</h2>
+</section>
+
+<section>
+    <h2>Amazon S3 - Simple Storage Service</h2>
+    <ul class="list-vertical">
+        <li class="fragment">It is designed to make web-scale computing easier for developers
+        </li>
+        <li class="fragment">Simple web services interface that you can use to store and retrieve any amount of data, at any time, from anywhere on the web
+        </li>
+        <li class="fragment">Highly scalable, reliable, fast
+        </li>
+    </ul>
+</section>
+
+
+<section>
+    <h2>Basic usage</h2>
+</section>
+
+<section>
+    <h2>Upload</h2>
+    <pre><code data-trim>
+const fs = require('fs');
+const aws = require('aws-sdk');
+aws.config.update(config);
+const s3 = new aws.S3();
+
+function upload(field, data) {
+  const readStream = fs.createReadStream(field.path);
+
+  const uploadParams = {
+    Bucket: 'bucketname',
+    Key: `path/${data.filename}`,
+    Metadata: {
+      contenttype: data.mimetype,
+      fieldname: data.fieldname,
+      filename: data.originalname,
+    },
+    Body: readStream,
+  };
+
+  s3.upload(uploadParams, (err, data) => {
+      if (err) {
+        console.error('Something is not yes');
+      } else {
+        console.log('Next step');
+      }
+    });
+};
+                </code></pre>
+</section>
+
+<section>
+    <h2>Download</h2>
+    <pre><code data-trim>
+const aws = require('aws-sdk');
+aws.config.update(config);
+const s3 = new aws.S3();
+
+function download(req, res) {
+    const params = {
+      Bucket: 'bucketname',
+      Key: 'path',
+    };
+
+    s3.getObject(params, (error, data) => {
+      if (error) {
+        console.error('Something is not yes');
+      } else {
+        res.setHeader('Content-Length', data.ContentLength);
+        res.setHeader('Content-Type', data.Metadata.contenttype);
+        res.setHeader('Content-Disposition', `${data.Metadata.fieldname}; filename=${data.Metadata.filename}`);
+
+        const stream = new Readable();
+
+        stream.push(data.Body);
+        stream.push(null);
+        stream.pipe(res);
+      }
+    });
+  };
+                </code></pre>
+</section>
+
+<section>
+    <h2>Amazon SES - Simple Email Service</h2>
+    <ul class="list-vertical">
+        <li class="fragment">Flexible, affordable, and highly-scalable email sending and receiving platform for businesses and developers.
+        </li>
+        <li class="fragment">Cloud-based email sending service designed to help digital marketers and application developers send marketing, notification, and transactional emails
+        </li>
+        <li class="fragment">High deliverability</li>
+        <li class="fragment">Cost-effective</li>
+        <li class="fragment">Configurable</li>
+    </ul>
+</section>
+
+<section>
+    <h2>Sending</h2>
+    <pre><code data-trim>
+const aws = require('aws-sdk');
+aws.config.update(config);
+const ses = new aws.SES();
+
+function sendEmail(notification, recipients) {
+    const data = {
+        host: 'HOST'
+        notificationSubject: 'SUBJECT',
+        notificationText: 'TEXT',
+    };
+
+    const params = {
+      Destination: { /* required */
+        ToAddresses: [
+          'EMAIL_ADDRESS',
+          /* more To email addresses */
+        ]
+      },
+      Source: 'EMAIL_ADDRESS', /* required */
+      Template: 'TEMPLATE_NAME', /* required */
+      TemplateData: JSON.stringify(mailData), /* required */
+    };
+
+    // Create the promise and SES service object
+    return ses.sendTemplatedEmail(params).promise();
+}
+
+// Handle promise's fulfilled/rejected states
+sendEmail(notification, recipientsArray)
+    .then(data => console.log(data))
+    .catch(err => console.error("Something is not yes"));
+    </code></pre>
+</section>
+
+<section>
+    <h2>Template</h2>
+    <pre><code data-trim><mjml>
+  <mj-head>
+    <mj-style>
+      a,
+      a[href],
+      a:link {
+        color: #FF6FFF;
+      }
+  </mj-style>
+  </mj-head>
+  <mj-body background-color="#EEE">
+    <mj-section>
+      <mj-column>
+        <mj-section background-color="#FFF">
+          <mj-image width="300" src="{{host}}/static/logo.png"></mj-image>
+        </mj-section>
+        <mj-text font-size="20px"font-family="helvetica">{{notificationSubject}}</mj-text>
+        <mj-text font-size="16px" font-family="helvetica">{{notificationText}}</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml></code></pre>
+</section>
+
+<section>
+    <h2>Sending template</h2>
+    <pre><code data-trim>
+{
+    "Template": {
+        "TemplateName": "TEMPLATE_NAME",
+        "SubjectPart": "{{notificationSubject}}",
+        "HtmlPart": "PARSE_HTML_PART",
+        "TextPart": "{{notificationText}}"
+  }
+}</code></pre>
+    <pre><code data-trim>
+aws ses create-template --cli-input-json file://template.json
+                </code></pre>
+</section>
+
+<section>
+    <h2>Amazon SNS - Simple Notification Service</h2>
+    <ul class="list-vertical">
+        <li class="fragment">Reliably deliver messages with durability</li>
+        <li class="fragment">Simplify architecture with message filtering</li>
+        <li class="fragment">Keep messages private and secure</li>
+        <li class="fragment">SNS fans out notifications to end users via mobile push messages, SMS, and email</li>
+    </ul>
+</section>
+
+<section>
+            <h2>How it works?</h2>
+        <p><img src="../../images/aws.png" alt="How it works"></p>
+</section>
+
+<section>
+    <h2>Sending SMS</h2>
+    <pre><code data-trim>
+const aws = require('aws-sdk');
+aws.config.update(config);
+const ses = new aws.SES();
+
+function subscribeToTopic(topicArn, recipients) {
+  const subscribeParams = {
+    Protocol: 'sms',
+    TopicArn: topicArn,
+  };
+
+  return Promise.all(recipients
+    .map(recipient => {
+      subscribeParams.Endpoint = recipient;
+      return sns.subscribe(subscribeParams).promise();
+    }));
+}
+
+function sendSms(notification, topicArn) {
+  const sendParams = {
+    Message: notification.messageText,
+    Subject: notification.messageSubject,
+    TopicArn: topicArn,
+  };
+
+  return sns.publish(sendParams).promise();
+}
+
+function unsubscribe(topicArn) {
+  const params = {
+    TopicArn: topicArn,
+  };
+
+  return sns.listSubscriptionsByTopic(params).promise()
+    .then(res => Promise.all(res.Subscriptions
+      .map(subscription => sns.unsubscribe({
+        SubscriptionArn: subscription.SubscriptionArn,
+      }).promise())))
+    .catch(err => console.error(err));
+}
+
+async function sendNotificationSms(notification, recipients) {
+  const topicParams = {
+    Name: moment().format('x'),
+  };
+  const smsParams = {
+    attributes: {
+      DefaultSenderID: 'PGS',
+    },
+  };
+
+  await sns.setSMSAttributes(smsParams).promise();
+
+  const topic = await sns.createTopic(topicParams).promise();
+
+  await subscribeToTopic(topic.TopicArn, recipients);
+  await sendSms(notification, topic.TopicArn);
+  await unsubscribe(topic.TopicArn);
+
+  sns.deleteTopic({ TopicArn: topic.TopicArn });
+}
+    </code></pre>
+</section>
+
+<section data-state="squares-off theme dark">
+    <q>
+        <h2>Im później przyjdziesz.</h2>
+        <h2>Tym wczesniej wyjdziesz.</h2>
+        <p>Wojciech Haberek</p>
+    </q>
+</section>
